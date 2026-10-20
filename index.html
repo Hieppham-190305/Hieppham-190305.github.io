@@ -32,9 +32,13 @@
             color: #ffee55;
         }
 
-        /* 1. Nền web: Tăng độ tương phản gradient giúp các chi tiết phát sáng rõ hơn */
+        /* Nền Ánh chiều: giữ vàng cam–nâu, sáng mềm ở trên và chân trang. */
         .body--ready {
-            background: linear-gradient(180deg, #e69d24 0%, #2a1f1d 60%, #120e0d 100%);
+            background:
+                radial-gradient(ellipse 44% 2% at 50% 98%, rgba(249, 184, 65, 0.32), rgba(203, 119, 28, 0.08) 52%, transparent 100%),
+                radial-gradient(ellipse 68% 10% at 50% 100%, rgba(173, 98, 28, 0.13), transparent 80%),
+                radial-gradient(ellipse 90% 25% at 50% 0%, rgba(255, 201, 86, 0.48), transparent 85%),
+                linear-gradient(180deg, #e6a12d 0%, #b97930 18%, #754a30 34%, #432d25 52%, #291d19 72%, #120e0d 100%);
         }
 
         .canvas {
@@ -110,6 +114,7 @@
 </head>
 
 <body data-scene="intro">
+    <div class="background-atmosphere" aria-hidden="true"></div>
     <section class="overlay" id="intro" aria-labelledby="intro-title">
         <div class="welcome">
             <p class="eyebrow">03.09.2026 · MỘT NGÀY ĐẶC BIỆT</p>

@@ -37,6 +37,18 @@ h1 { font-size: clamp(35px, 7vw, 58px); margin: 16px 0 22px; color: #fff0cd; }
 .music-control { position: fixed; z-index: 9; right: max(14px, env(safe-area-inset-right)); top: max(16px, env(safe-area-inset-top)); border: 1px solid #e2bd784a; border-radius: 999px; background: #211814ba; color: #eed5a7; backdrop-filter: blur(12px); font-size: 11px; padding: 8px 12px; line-height: 1.5; letter-spacing: .2px; min-height: 38px; }
 body[data-scene="intro"] .cs, body[data-scene="intro"] .text { visibility: hidden; }
 .canvas { transition: opacity .8s; }
+.background-atmosphere {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+        radial-gradient(circle at 8% 24%, #fce0a373 0 .7px, transparent 1.8px),
+        radial-gradient(circle at 94% 31%, #fce0a366 0 .8px, transparent 1.9px),
+        radial-gradient(circle at 5% 61%, #fce0a340 0 .6px, transparent 1.6px),
+        radial-gradient(circle at 91% 70%, #fce0a34d 0 .7px, transparent 1.8px),
+        radial-gradient(circle at 12% 86%, #fce0a373 0 .8px, transparent 2px),
+        radial-gradient(circle at 86% 91%, #fce0a380 0 .8px, transparent 2px),
+        radial-gradient(ellipse at 50% 35%, transparent 45%, #120e0d30 100%);
+}
+.canvas { z-index: 0; }
 body[data-scene="intro"] .canvas, body[data-scene="card"] .canvas { opacity: 0; }
 .cake-actions { position: fixed; z-index: 3; bottom: calc(max(16px, env(safe-area-inset-bottom)) + 64px); left: 16px; right: 16px; text-align: center; animation: appear .7s ease both; }
 .cake-actions p { font-size: clamp(11px, 2.7vw, 14px); color: #e5c89b; margin: 0 0 10px; letter-spacing: .1px; }
