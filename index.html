@@ -105,9 +105,41 @@
             font-weight: bold;
         }
     </style>
+    <link rel="stylesheet" href="experience.css">
 </head>
 
-<body>
+<body data-scene="intro">
+    <section class="overlay" id="intro" aria-labelledby="intro-title">
+        <div class="welcome">
+            <p class="eyebrow">03.09.2026 · MỘT NGÀY ĐẶC BIỆT</p>
+            <div class="gift" aria-hidden="true"><span class="gift-bow"></span><span class="gift-lid"></span><span class="gift-box"></span></div>
+            <p class="small-note">Gửi Phan Võ Minh Thư</p>
+            <h1 id="intro-title">Có một món quà<br>dành cho Thư.</h1>
+            <p class="intro-copy">Một chút bất ngờ, một chút lung linh.<br>Và những lời chúc dành riêng cho bạn.</p>
+            <button class="button primary" id="open-gift">Mở quà nhé <span aria-hidden="true">↗</span></button>
+            <p class="sound-note">Có nhạc nhẹ khi mở quà · Bạn có thể tắt bất cứ lúc nào</p>
+        </div>
+    </section>
+    <button class="music-control" id="music" type="button" aria-pressed="false" hidden>Nhạc: tắt</button>
+    <p class="sr-only" id="announcement" role="status" aria-live="polite"></p>
+    <div class="cake-actions" id="cake-actions" hidden>
+        <p>Nhắm mắt lại, ước một điều thật đẹp…</p>
+        <button class="button primary" id="blow-candles">Chạm để tắt nến <span aria-hidden="true">✧</span></button>
+    </div>
+    <section class="overlay final-overlay" id="final-card" aria-labelledby="card-title" hidden>
+        <article class="birthday-card">
+            <p class="eyebrow">MỘT TUỔI MỚI, THẬT NHIỀU NIỀM VUI</p>
+            <div class="card-star" aria-hidden="true">✧</div>
+            <p class="small-note">Gửi Thư,</p>
+            <h2 id="card-title" tabindex="-1">Chúc mừng<br>sinh nhật nha!</h2>
+            <div class="card-rule"></div>
+            <p>Chúc Thư luôn vui vẻ, tài sắc vẹn toàn<br>và sớm có bằng lái nhaaaa.</p>
+            <p>Mong tuổi mới có thật nhiều niềm vui,<br>và điều ước hôm nay sẽ thành hiện thực.</p>
+            <p class="card-signature">Một ngày thật đẹp dành cho Thư ♡</p>
+            <button class="button secondary" id="replay">Xem lại từ đầu <span aria-hidden="true">↻</span></button>
+        </article>
+    </section>
+    <canvas id="confetti" aria-hidden="true"></canvas>
     <!--Avatar-->
     <div class="cs">
         <!-- Thay LINK_ANH_CUA_BAN vào phần src bên dưới -->
@@ -142,7 +174,6 @@
             init: function () {
                 S.Drawing.init('.canvas');
                 document.body.classList.add('body--ready');
-                S.UI.simulate("Chúc mừng|Sinh nhật|Phan Võ Minh Thư|#countdown 3|Chúc Thư|Luôn vui vẻ|Tài sắc vẹn toàn|và|Sớm có bằng lái|nhaaaa|#cake");
                 S.Drawing.loop(function () {
                     S.Shape.render();
                 });
@@ -198,8 +229,10 @@
                 getContentArea: function () {
                     var avatar = document.querySelector('.cs').getBoundingClientRect(),
                         footer = document.querySelector('.text').getBoundingClientRect(),
+                        cakeActions = document.getElementById('cake-actions'),
+                        bottomEdge = cakeActions && !cakeActions.hidden ? Math.min(footer.top, cakeActions.getBoundingClientRect().top) : footer.top,
                         top = avatar.bottom + 24,
-                        bottom = Math.max(top + 1, footer.top - 24);
+                        bottom = Math.max(top + 1, bottomEdge - 24);
                     return { x: 16, y: top, w: Math.max(1, area.w - 32), h: bottom - top };
                 },
                 drawCircle: function (p, c) {
@@ -257,6 +290,9 @@
                 sequence = typeof (value) === 'object' ? value : sequence.concat(value.split('|'));
                 timedAction(function (index) {
                     current = sequence.shift();
+                    if (typeof current !== 'string') { return; }
+                    var announcement = document.getElementById('announcement');
+                    if (announcement && current[0] !== '#') { announcement.textContent = current; }
                     action = getAction(current);
                     value = getValue(current);
                     switch (action) {
@@ -281,7 +317,8 @@
                             S.Shape.switchShape(S.ShapeBuilder.rectangle(Math.min(maxShapeSize, parseInt(value[0])), Math.min(maxShapeSize, parseInt(value[1]))));
                             break;
                         case 'cake':
-                            S.Shape.switchShape(S.ShapeBuilder.cake());
+                            S.Shape.switchShape(S.ShapeBuilder.cake(true));
+                            Experience.showCake();
                             break;
                         case 'circle':
                             value = parseInt(value) || maxShapeSize;
@@ -309,6 +346,8 @@
             }
             return {
                 simulate: function (action) {
+                    clearInterval(interval);
+                    sequence = [];
                     performAction(action);
                 }
             };
@@ -341,7 +380,7 @@
             });
             this.e = 0.07;
             this.s = true;
-            this.c = new S.Color(255, 255, 255, this.p.a);
+            this.c = new S.Color(255, 233, 170, this.p.a);
             this.t = this.clone();
             this.q = [];
         };
@@ -356,7 +395,7 @@
                 });
             },
             _draw: function () {
-                this.c.a = this.p.a;
+                this.c.a = this.p.a * (this.s ? 1 : 0.28);
                 S.Drawing.drawCircle(this.p, this.c);
             },
             _moveTowards: function (n) {
@@ -429,6 +468,7 @@
                 shapeCanvas = document.createElement('canvas'),
                 shapeContext = shapeCanvas.getContext('2d'),
                 currentLetter = null,
+                candlesLit = true,
                 fontFamily = 'Avenir, Helvetica Neue, Helvetica, Arial, sans-serif';
             function fit() {
                 var area = S.Drawing.getContentArea();
@@ -489,7 +529,8 @@
                     shapeContext.closePath();
                     return processCanvas();
                 },
-                cake: function () {
+                cake: function (lit) {
+                    if (lit !== undefined) { candlesLit = lit; }
                     currentLetter = '#cake';
                     fit();
                     // Fixed geometry keeps the cake identical across system emoji fonts.
@@ -531,11 +572,13 @@
                     // Three candles with flame outlines.
                     [190, 240, 290].forEach(function (x) {
                         c.strokeRect(x - 6, 91, 12, 58);
-                        c.beginPath();
-                        c.moveTo(x, 54);
-                        c.bezierCurveTo(x - 23, 78, x - 6, 89, x, 84);
-                        c.bezierCurveTo(x + 16, 79, x + 9, 66, x, 54);
-                        c.stroke();
+                        if (candlesLit) {
+                            c.beginPath();
+                            c.moveTo(x, 54);
+                            c.bezierCurveTo(x - 23, 78, x - 6, 89, x, 84);
+                            c.bezierCurveTo(x + 16, 79, x + 9, 66, x, 54);
+                            c.stroke();
+                        }
                     });
                     // Matching decorative sparkles on both sides.
                     [60, 420].forEach(function (x) {
@@ -697,6 +740,7 @@
         }());
         S.init();
     </script>
+    <script src="experience.js"></script>
     <!-- <div>
         <audio autoplay>
             <source src="https://play.imusicvn.com/stream/Mgbb1byycZvy" type="audio/mpeg">
