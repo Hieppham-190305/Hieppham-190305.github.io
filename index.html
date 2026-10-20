@@ -142,7 +142,7 @@
             init: function () {
                 S.Drawing.init('.canvas');
                 document.body.classList.add('body--ready');
-                S.UI.simulate("Chúc mừng|Sinh nhật|Phan Võ Minh Thư|#countdown 3|Chúc Thư|Luôn vui vẻ|Tài sắc vẹn toàn|và|Sớm có bằng lái|nhaaaa|✨🎂✨ ");
+                S.UI.simulate("Chúc mừng|Sinh nhật|Phan Võ Minh Thư|#countdown 3|Chúc Thư|Luôn vui vẻ|Tài sắc vẹn toàn|và|Sớm có bằng lái|nhaaaa|#cake");
                 S.Drawing.loop(function () {
                     S.Shape.render();
                 });
@@ -279,6 +279,9 @@
                             value = value && value.split('x');
                             value = (value && value.length === 2) ? value : [maxShapeSize, maxShapeSize / 2];
                             S.Shape.switchShape(S.ShapeBuilder.rectangle(Math.min(maxShapeSize, parseInt(value[0])), Math.min(maxShapeSize, parseInt(value[1]))));
+                            break;
+                        case 'cake':
+                            S.Shape.switchShape(S.ShapeBuilder.cake());
                             break;
                         case 'circle':
                             value = parseInt(value) || maxShapeSize;
@@ -461,7 +464,7 @@
                 getGap: function () { return gap; },
                 refresh: function () {
                     if (currentLetter !== null) {
-                        S.Shape.switchShape(this.letter(currentLetter), true, true);
+                        S.Shape.switchShape(currentLetter === '#cake' ? this.cake() : this.letter(currentLetter), true, true);
                     }
                 },
                 imageFile: function (url, callback) {
@@ -484,6 +487,71 @@
                     shapeContext.arc(r * gap, r * gap, r * gap, 0, 2 * Math.PI, false);
                     shapeContext.fill();
                     shapeContext.closePath();
+                    return processCanvas();
+                },
+                cake: function () {
+                    currentLetter = '#cake';
+                    fit();
+                    // Fixed geometry keeps the cake identical across system emoji fonts.
+                    var c = shapeContext,
+                        scale = Math.min((shapeCanvas.width - 24) / 480, (shapeCanvas.height - 24) / 320, 1.5);
+                    c.save();
+                    c.translate(shapeCanvas.width / 2, shapeCanvas.height / 2);
+                    c.scale(scale, scale);
+                    c.translate(-240, -160);
+                    c.strokeStyle = 'red';
+                    c.lineWidth = 5;
+                    c.lineCap = 'round';
+                    c.lineJoin = 'round';
+
+                    // Cake top, sides, and serving plate.
+                    c.beginPath();
+                    c.ellipse(240, 156, 108, 26, 0, 0, Math.PI * 2);
+                    c.moveTo(132, 156);
+                    c.lineTo(132, 252);
+                    c.bezierCurveTo(132, 288, 348, 288, 348, 252);
+                    c.lineTo(348, 156);
+                    c.stroke();
+                    c.beginPath();
+                    c.ellipse(240, 270, 128, 22, 0, 0, Math.PI);
+                    c.stroke();
+
+                    // Scalloped icing across the front.
+                    c.beginPath();
+                    c.moveTo(132, 179);
+                    for (var x = 132; x < 348; x += 36) {
+                        c.bezierCurveTo(x + 8, 212, x + 28, 212, x + 36, 179);
+                    }
+                    c.stroke();
+                    c.beginPath();
+                    c.moveTo(134, 237);
+                    c.bezierCurveTo(185, 260, 295, 260, 346, 237);
+                    c.stroke();
+
+                    // Three candles with flame outlines.
+                    [190, 240, 290].forEach(function (x) {
+                        c.strokeRect(x - 6, 91, 12, 58);
+                        c.beginPath();
+                        c.moveTo(x, 54);
+                        c.bezierCurveTo(x - 23, 78, x - 6, 89, x, 84);
+                        c.bezierCurveTo(x + 16, 79, x + 9, 66, x, 54);
+                        c.stroke();
+                    });
+                    // Matching decorative sparkles on both sides.
+                    [60, 420].forEach(function (x) {
+                        c.beginPath();
+                        c.moveTo(x, 136);
+                        c.lineTo(x + 9, 165);
+                        c.lineTo(x + 30, 174);
+                        c.lineTo(x + 9, 183);
+                        c.lineTo(x, 212);
+                        c.lineTo(x - 9, 183);
+                        c.lineTo(x - 30, 174);
+                        c.lineTo(x - 9, 165);
+                        c.closePath();
+                        c.stroke();
+                    });
+                    c.restore();
                     return processCanvas();
                 },
                 letter: function (l) {
