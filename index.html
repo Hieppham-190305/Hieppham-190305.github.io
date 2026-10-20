@@ -136,14 +136,45 @@
             <p>Chúc Thư luôn vui vẻ, tài sắc vẹn toàn<br>và sớm có bằng lái nhaaaa.</p>
             <p>Mong tuổi mới có thật nhiều niềm vui,<br>và điều ước hôm nay sẽ thành hiện thực.</p>
             <p class="card-signature">Một ngày thật đẹp dành cho Thư ♡</p>
-            <button class="button secondary" id="replay">Xem lại từ đầu <span aria-hidden="true">↻</span></button>
+            <button class="envelope-button" id="open-letter" aria-expanded="false" aria-controls="personal-letter"><span aria-hidden="true">✉</span> Có một lá thư dành cho Thư</button>
+            <div class="personal-letter" id="personal-letter" hidden>
+                <p class="letter-greeting">Thư nè,</p>
+                <p id="letter-message"></p>
+                <p class="letter-signature" id="letter-signature"></p>
+            </div>
+            <div class="card-tools"><button class="button primary" id="save-card">Lưu thiệp về máy <span aria-hidden="true">↓</span></button>
+            <button class="button secondary" id="replay">Xem lại từ đầu <span aria-hidden="true">↻</span></button></div>
         </article>
     </section>
+    <section class="overlay memories-overlay" id="memories" aria-labelledby="memories-title" hidden>
+        <div class="memories-content">
+            <p class="eyebrow">NHỮNG ĐIỀU NHỎ, THẬT ĐÁNG NHỚ</p>
+            <h2 id="memories-title" tabindex="-1">Một chút kỷ niệm.</h2>
+            <figure class="polaroid" id="memory-frame"><img id="memory-image" alt=""><figcaption id="memory-caption"></figcaption></figure>
+            <p class="memory-count" id="memory-count" aria-live="polite"></p>
+            <div class="memory-controls"><button class="button secondary" id="memory-prev" aria-label="Ảnh trước">←</button><button class="button secondary" id="memory-next" aria-label="Ảnh tiếp theo">→</button></div>
+            <button class="text-button" id="skip-memories">Đến phần bánh kem <span aria-hidden="true">↗</span></button>
+        </div>
+    </section>
+    <section class="wish-sky" id="wish-sky" aria-labelledby="wish-message" hidden>
+        <div class="sky-stars" aria-hidden="true">✦ · ✧ · ✦ · ✧</div>
+        <div class="wish-star" aria-hidden="true">✦</div>
+        <p class="eyebrow">GỬI MỘT ĐIỀU ƯỚC LÊN BẦU TRỜI</p>
+        <h2 id="wish-message" tabindex="-1">Mong điều Thư vừa ước<br>sẽ thành hiện thực.</h2>
+    </section>
+    <dialog id="save-preview" aria-labelledby="save-title">
+        <h2 id="save-title">Giữ lại một chút kỷ niệm.</h2>
+        <img id="saved-card-image" alt="Thiệp sinh nhật dành cho Thư">
+        <p>Trên điện thoại, bạn cũng có thể chạm giữ ảnh để lưu.</p>
+        <a class="button primary" id="download-card" download="chuc-mung-sinh-nhat-Thu.png">Tải ảnh PNG ↓</a>
+        <button class="text-button" id="close-preview">Đóng</button>
+    </dialog>
+    <p class="secret-message" id="secret-message" role="status" hidden>Tuổi mới nhớ lấy bằng lái nha 😆</p>
     <canvas id="confetti" aria-hidden="true"></canvas>
     <!--Avatar-->
     <div class="cs">
         <!-- Thay LINK_ANH_CUA_BAN vào phần src bên dưới -->
-        <img src="https://i.imgur.com/80dYYhC.jpeg" id="logo" alt="Ảnh sinh nhật Minh Thư">
+        <button id="avatar-secret" aria-label="Ảnh của Thư — chạm để khám phá một bất ngờ"><img src="https://i.imgur.com/80dYYhC.jpeg" id="logo" alt="Ảnh sinh nhật Minh Thư"></button>
     </div>
     <canvas class="canvas" aria-label="Lời chúc sinh nhật bằng hiệu ứng hạt"></canvas>
     <p class="text" style="color: #ffd8a8;">
@@ -315,6 +346,9 @@
                             value = value && value.split('x');
                             value = (value && value.length === 2) ? value : [maxShapeSize, maxShapeSize / 2];
                             S.Shape.switchShape(S.ShapeBuilder.rectangle(Math.min(maxShapeSize, parseInt(value[0])), Math.min(maxShapeSize, parseInt(value[1]))));
+                            break;
+                        case 'memories':
+                            Experience.showMemories();
                             break;
                         case 'cake':
                             S.Shape.switchShape(S.ShapeBuilder.cake(true));
@@ -740,6 +774,7 @@
         }());
         S.init();
     </script>
+    <script src="gift-content.js"></script>
     <script src="experience.js"></script>
     <!-- <div>
         <audio autoplay>
