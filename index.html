@@ -1,16 +1,18 @@
-<html>
+<!DOCTYPE html>
+<html lang="vi">
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title> Happy Birthday </title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <link rel="Shortcut Icon" href="https://i.pinimg.com/236x/a5/20/de/a520deb545fea9b62776e6bea5d77928.jpg"
         type="image/x-icon" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <style>
+        * { box-sizing: border-box; }
+
         html {
             height: 100%;
+            overflow: hidden;
         }
 
         body {
@@ -21,6 +23,9 @@
             line-height: 2;
             letter-spacing: 1.2px;
             margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
         }
 
         a {
@@ -33,21 +38,27 @@
         }
 
         .canvas {
-            margin: 0 auto;
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
             display: block;
+            pointer-events: none;
         }
 
         /* 2. Ảnh Avatar: Tăng độ rộng bóng đổ (glow) cực mạnh & đa tầng */
         img#logo {
-            width: 128px;
-            background-size: cover;
+            width: clamp(64px, 16vmin, 128px);
+            height: clamp(64px, 16vmin, 128px);
+            object-fit: cover;
             border-radius: 200px;
             border: 3px solid #ffee55;
             box-shadow: 0 0 25px #ffcc00,
                 0 0 50px rgba(255, 204, 0, 0.6),
                 0 0 80px rgba(255, 170, 0, 0.4);
             opacity: 1;
-            margin: 20px auto;
+            display: block;
+            margin: 0 auto;
             transition: all 0.8s ease-in-out;
         }
 
@@ -60,17 +71,24 @@
         }
 
         .cs {
+            position: fixed;
+            z-index: 1;
+            top: max(16px, env(safe-area-inset-top));
+            left: 0;
             width: 100%;
-            height: 100%;
-            margin: 0 auto;
-            position: absolute;
             text-align: center;
         }
 
         /* 4. Chữ đếm ngày: Thêm bóng chữ tỏa sáng dạ quang */
         .text {
             position: fixed;
-            bottom: 20px;
+            bottom: max(16px, env(safe-area-inset-bottom));
+            z-index: 1;
+            margin: 0;
+            padding: 0 16px;
+            font-size: clamp(14px, 2.5vmin, 18px);
+            line-height: 1.8;
+            overflow-wrap: anywhere;
             text-align: center;
             width: 100%;
             font-weight: bold;
@@ -93,9 +111,9 @@
     <!--Avatar-->
     <div class="cs">
         <!-- Thay LINK_ANH_CUA_BAN vào phần src bên dưới -->
-        <img src="https://i.imgur.com/80dYYhC.jpeg" id="logo">
+        <img src="https://i.imgur.com/80dYYhC.jpeg" id="logo" alt="Ảnh sinh nhật Minh Thư">
     </div>
-    <canvas class="canvas" width="1820" height="905"></canvas>
+    <canvas class="canvas" aria-label="Lời chúc sinh nhật bằng hiệu ứng hạt"></canvas>
     <p class="text" style="color: #ffd8a8;">
         <span id="span_dt_dt">03/09/2026</span><br>潘武明书
     </p>
@@ -134,6 +152,8 @@
             var canvas,
                 context,
                 renderFn,
+                area = { w: 0, h: 0 },
+                resizeFrame,
                 requestFrame = window.requestAnimationFrame ||
                     window.webkitRequestAnimationFrame ||
                     window.mozRequestAnimationFrame ||
@@ -147,8 +167,12 @@
                     canvas = document.querySelector(el);
                     context = canvas.getContext('2d');
                     this.adjustCanvas();
-                    window.addEventListener('resize', function (e) {
-                        S.Drawing.adjustCanvas();
+                    window.addEventListener('resize', function () {
+                        cancelAnimationFrame(resizeFrame);
+                        resizeFrame = requestAnimationFrame(function () {
+                            S.Drawing.adjustCanvas();
+                            S.ShapeBuilder.refresh();
+                        });
                     });
                 },
                 loop: function (fn) {
@@ -158,19 +182,30 @@
                     requestFrame.call(window, this.loop.bind(this));
                 },
                 adjustCanvas: function () {
-                    canvas.width = window.innerWidth;
-                    canvas.height = window.innerHeight;
+                    var bounds = canvas.getBoundingClientRect(),
+                        ratio = Math.min(window.devicePixelRatio || 1, 2);
+                    area = { w: bounds.width, h: bounds.height };
+                    canvas.width = Math.round(area.w * ratio);
+                    canvas.height = Math.round(area.h * ratio);
+                    context.setTransform(ratio, 0, 0, ratio, 0, 0);
                 },
                 clearFrame: function () {
-                    context.clearRect(0, 0, canvas.width, canvas.height);
+                    context.clearRect(0, 0, area.w, area.h);
                 },
                 getArea: function () {
-                    return { w: canvas.width, h: canvas.height };
+                    return area;
+                },
+                getContentArea: function () {
+                    var avatar = document.querySelector('.cs').getBoundingClientRect(),
+                        footer = document.querySelector('.text').getBoundingClientRect(),
+                        top = avatar.bottom + 24,
+                        bottom = Math.max(top + 1, footer.top - 24);
+                    return { x: 16, y: top, w: Math.max(1, area.w - 32), h: bottom - top };
                 },
                 drawCircle: function (p, c) {
                     context.fillStyle = c.render();
                     context.beginPath();
-                    context.arc(p.x, p.y, p.z, 0, 2 * Math.PI, true);
+                    context.arc(p.x, p.y, p.z * S.ShapeBuilder.getGap() / 20, 0, 2 * Math.PI, true);
                     context.closePath();
                     context.fill();
                 }
@@ -305,11 +340,11 @@
         S.Dot.prototype = {
             clone: function () {
                 return new S.Point({
-                    x: this.x,
-                    y: this.y,
-                    z: this.z,
-                    a: this.a,
-                    h: this.h
+                    x: this.p.x,
+                    y: this.p.y,
+                    z: this.p.z,
+                    a: this.p.a,
+                    h: this.p.h
                 });
             },
             _draw: function () {
@@ -343,8 +378,8 @@
                 if (this._moveTowards(this.t)) {
                     var p = this.q.shift();
                     if (p) {
-                        this.t.x = p.x || this.p.x;
-                        this.t.y = p.y || this.p.y;
+                        this.t.x = p.x === undefined ? this.p.x : p.x;
+                        this.t.y = p.y === undefined ? this.p.y : p.y;
                         this.t.z = p.z || this.p.z;
                         this.t.a = p.a || this.p.a;
                         this.p.h = p.h || 0;
@@ -360,7 +395,7 @@
                         }
                     }
                 }
-                d = this.p.a - this.t.a;
+                var d = this.p.a - this.t.a;
                 this.p.a = Math.max(0.1, this.p.a - (d * 0.05));
                 d = this.p.z - this.t.z;
                 this.p.z = Math.max(1, this.p.z - (d * 0.05));
@@ -385,58 +420,45 @@
             var gap = 13,
                 shapeCanvas = document.createElement('canvas'),
                 shapeContext = shapeCanvas.getContext('2d'),
-                fontSize = 500,
+                currentLetter = null,
                 fontFamily = 'Avenir, Helvetica Neue, Helvetica, Arial, sans-serif';
             function fit() {
-                gap = window.innerWidth < 600 ? 8 : 13;
-                shapeCanvas.width = Math.floor(window.innerWidth / gap) * gap;
-                shapeCanvas.height = Math.floor(window.innerHeight / gap) * gap;
+                var area = S.Drawing.getContentArea();
+                gap = area.w < 600 ? 4 : 7;
+                shapeCanvas.width = Math.max(1, Math.ceil(area.w));
+                shapeCanvas.height = Math.max(1, Math.ceil(area.h));
                 shapeContext.fillStyle = 'red';
                 shapeContext.textBaseline = 'middle';
                 shapeContext.textAlign = 'center';
             }
             function processCanvas() {
-                var pixels = shapeContext.getImageData(0, 0, shapeCanvas.width, shapeCanvas.height).data;
-                dots = [],
-                    pixels,
-                    x = 0,
-                    y = 0,
-                    fx = shapeCanvas.width,
-                    fy = shapeCanvas.height,
-                    w = 0,
-                    h = 0;
-                for (var p = 0; p < pixels.length; p += (4 * gap)) {
-                    if (pixels[p + 3] > 0) {
-                        dots.push(new S.Point({
-                            x: x,
-                            y: y
-                        }));
-                        w = x > w ? x : w;
-                        h = y > h ? y : h;
-                        fx = x < fx ? x : fx;
-                        fy = y < fy ? y : fy;
-                    }
-                    x += gap;
-                    if (x >= shapeCanvas.width) {
-                        x = 0;
-                        y += gap;
-                        p += gap * 4 * shapeCanvas.width;
+                var pixels = shapeContext.getImageData(0, 0, shapeCanvas.width, shapeCanvas.height).data,
+                    dots = [], minX = shapeCanvas.width, minY = shapeCanvas.height,
+                    maxX = 0, maxY = 0;
+                for (var y = 0; y < shapeCanvas.height; y += gap) {
+                    for (var x = 0; x < shapeCanvas.width; x += gap) {
+                        if (pixels[(y * shapeCanvas.width + x) * 4 + 3] > 0) {
+                            dots.push(new S.Point({ x: x, y: y }));
+                            minX = Math.min(minX, x);
+                            minY = Math.min(minY, y);
+                            maxX = Math.max(maxX, x);
+                            maxY = Math.max(maxY, y);
+                        }
                     }
                 }
-                return { dots: dots, w: w + fx, h: h + fy };
+                dots.forEach(function (dot) { dot.x -= minX; dot.y -= minY; });
+                return { dots: dots, w: dots.length ? maxX - minX : 0, h: dots.length ? maxY - minY : 0 };
             }
             function setFontSize(s) {
                 shapeContext.font = 'bold ' + s + 'px ' + fontFamily;
             }
-            function isNumber(n) {
-                return !isNaN(parseFloat(n)) && isFinite(n);
-            }
-            function init() {
-                fit();
-                window.addEventListener('resize', fit);
-            }
-            init();
             return {
+                getGap: function () { return gap; },
+                refresh: function () {
+                    if (currentLetter !== null) {
+                        S.Shape.switchShape(this.letter(currentLetter), true, true);
+                    }
+                },
                 imageFile: function (url, callback) {
                     var image = new Image(),
                         a = S.Drawing.getArea();
@@ -460,14 +482,35 @@
                     return processCanvas();
                 },
                 letter: function (l) {
-                    var s = 0;
-                    setFontSize(fontSize);
-                    s = Math.min(fontSize,
-                        (shapeCanvas.width / shapeContext.measureText(l).width) * 0.8 * fontSize,
-                        (shapeCanvas.height / fontSize) * (isNumber(l) ? 1 : 0.45) * fontSize);
-                    setFontSize(s);
+                    currentLetter = String(l);
+                    fit();
+                    var words = currentLetter.trim().split(/\s+/),
+                        lines = [], line = '', size = Math.min(220, shapeCanvas.height * 0.45),
+                        maxWidth = shapeCanvas.width - 24,
+                        maxHeight = shapeCanvas.height - 24;
+                    // Reflow whole words first, then fit all lines including Vietnamese accents.
+                    for (; size >= 8; size -= 1) {
+                        setFontSize(size);
+                        lines = []; line = '';
+                        words.forEach(function (word) {
+                            var next = line ? line + ' ' + word : word;
+                            if (line && shapeContext.measureText(next).width > maxWidth) {
+                                lines.push(line); line = word;
+                            } else { line = next; }
+                        });
+                        lines.push(line);
+                        if (lines.length <= (shapeCanvas.width < 600 ? 3 : 2) &&
+                            lines.length * size * 1.35 <= maxHeight &&
+                            lines.every(function (text) { return shapeContext.measureText(text).width <= maxWidth; })) {
+                            break;
+                        }
+                    }
+                    setFontSize(size);
                     shapeContext.clearRect(0, 0, shapeCanvas.width, shapeCanvas.height);
-                    shapeContext.fillText(l, shapeCanvas.width / 2, shapeCanvas.height / 2);
+                    lines.forEach(function (text, i) {
+                        shapeContext.fillText(text, shapeCanvas.width / 2,
+                            shapeCanvas.height / 2 + (i - (lines.length - 1) / 2) * size * 1.35);
+                    });
                     return processCanvas();
                 },
                 rectangle: function (w, h) {
@@ -494,8 +537,9 @@
                 cy = 0;
             function compensate() {
                 var a = S.Drawing.getArea();
-                cx = a.w / 2 - width / 2;
-                cy = a.h / 2 - height / 2;
+                var content = S.Drawing.getContentArea();
+                cx = content.x + (content.w - width) / 2;
+                cy = content.y + (content.h - height) / 2;
             }
             return {
                 shuffleIdle: function () {
@@ -509,7 +553,10 @@
                         }
                     }
                 },
-                switchShape: function (n, fast) {
+                switchShape: function (n, fast, reset) {
+                    if (reset) {
+                        dots.forEach(function (dot) { dot.q = []; dot.p.h = 0; });
+                    }
                     var size,
                         a = S.Drawing.getArea();
                     width = n.w;
