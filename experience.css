@@ -8,9 +8,9 @@
 }
 :root {
     color-scheme: dark;
-    --avatar-width: clamp(128px, 26vmin, 184px);
-    --avatar-height: calc(var(--avatar-width) / 1.55);
-    --avatar-radius: clamp(18px, 3vmin, 26px);
+    --avatar-width: clamp(64px, 16vmin, 112px);
+    --avatar-height: var(--avatar-width);
+    --avatar-radius: 50%;
 }
 button { font: inherit; -webkit-tap-highlight-color: transparent; cursor: pointer; }
 button:focus-visible { outline: 2px solid #fff2b5; outline-offset: 6px; }
