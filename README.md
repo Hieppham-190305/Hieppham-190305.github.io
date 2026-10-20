@@ -24,3 +24,5 @@ Mở quà → lời chúc bằng hạt → ảnh kỷ niệm → bánh kem → n
 Chạm ảnh đại diện để hiện lời trêu. Nút lưu thiệp tạo ảnh PNG 1200 × 1600 ngay trong trình duyệt; trên điện thoại có thể chạm giữ ảnh xem trước để lưu. Ảnh PNG chứa lời thư và chữ ký, không tải ảnh bên ngoài vào canvas.
 
 Nhạc được tạo bằng Web Audio, chỉ bật sau khi chạm mở quà. Có nút bật/tắt nhạc và nút xem lại. Thời gian mỗi câu chúc: laptop 3 giây, điện thoại 4 giây.
+
+Chữ hạt dùng phông Nunito được lưu tại `assets/fonts/Nunito.ttf`, kèm giấy phép SIL Open Font License trong `assets/fonts/OFL-Nunito.txt`. Ánh sáng hạt được vẽ từ một ảnh canvas nhỏ dùng lại để giảm chi phí vẽ trên điện thoại.

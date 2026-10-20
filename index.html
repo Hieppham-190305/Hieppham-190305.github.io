@@ -105,6 +105,7 @@
             font-weight: bold;
         }
     </style>
+    <link rel="preload" href="assets/fonts/Nunito.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="stylesheet" href="experience.css">
 </head>
 
@@ -205,6 +206,11 @@
             init: function () {
                 S.Drawing.init('.canvas');
                 document.body.classList.add('body--ready');
+                if (document.fonts) {
+                    document.fonts.load('800 120px "Birthday Nunito"', 'Chúc mừng Sinh nhật Thư').then(function () {
+                        S.ShapeBuilder.refresh();
+                    }).catch(function () { /* Keep the system font fallback available offline. */ });
+                }
                 S.Drawing.loop(function () {
                     S.Shape.render();
                 });
@@ -214,6 +220,7 @@
             var canvas,
                 context,
                 renderFn,
+                particleSprite,
                 area = { w: 0, h: 0 },
                 resizeFrame,
                 requestFrame = window.requestAnimationFrame ||
@@ -228,6 +235,17 @@
                 init: function (el) {
                     canvas = document.querySelector(el);
                     context = canvas.getContext('2d');
+                    // Cache the soft glow once instead of computing shadows for every particle.
+                    particleSprite = document.createElement('canvas');
+                    particleSprite.width = particleSprite.height = 32;
+                    var spriteContext = particleSprite.getContext('2d'),
+                        glow = spriteContext.createRadialGradient(16, 16, 0, 16, 16, 16);
+                    glow.addColorStop(0, 'rgba(255, 250, 222, 1)');
+                    glow.addColorStop(0.42, 'rgba(255, 240, 189, 1)');
+                    glow.addColorStop(0.62, 'rgba(255, 211, 125, 0.28)');
+                    glow.addColorStop(1, 'rgba(255, 197, 95, 0)');
+                    spriteContext.fillStyle = glow;
+                    spriteContext.fillRect(0, 0, 32, 32);
                     this.adjustCanvas();
                     window.addEventListener('resize', function () {
                         cancelAnimationFrame(resizeFrame);
@@ -267,11 +285,11 @@
                     return { x: 16, y: top, w: Math.max(1, area.w - 32), h: bottom - top };
                 },
                 drawCircle: function (p, c) {
-                    context.fillStyle = c.render();
-                    context.beginPath();
-                    context.arc(p.x, p.y, p.z * S.ShapeBuilder.getGap() / 20, 0, 2 * Math.PI, true);
-                    context.closePath();
-                    context.fill();
+                    var radius = p.z * S.ShapeBuilder.getGap() / 20,
+                        size = radius * 4;
+                    context.globalAlpha = c.a;
+                    context.drawImage(particleSprite, p.x - size / 2, p.y - size / 2, size, size);
+                    context.globalAlpha = 1;
                 }
             };
         }());
@@ -413,6 +431,7 @@
                 h: 0
             });
             this.e = 0.07;
+            this.phase = Math.random() * Math.PI * 2;
             this.s = true;
             this.c = new S.Color(255, 233, 170, this.p.a);
             this.t = this.clone();
@@ -466,8 +485,10 @@
                         this.p.h = p.h || 0;
                     } else {
                         if (this.s) {
-                            this.p.x -= Math.sin(Math.random() * 3.142);
-                            this.p.y -= Math.sin(Math.random() * 3.142);
+                            // A tiny shimmer around the target keeps Vietnamese accents crisp.
+                            this.phase += 0.035;
+                            this.p.x = this.t.x + Math.sin(this.phase) * 0.14;
+                            this.p.y = this.t.y + Math.cos(this.phase) * 0.14;
                         } else {
                             this.move(new S.Point({
                                 x: this.p.x + (Math.random() * 50) - 25,
@@ -503,7 +524,7 @@
                 shapeContext = shapeCanvas.getContext('2d'),
                 currentLetter = null,
                 candlesLit = true,
-                fontFamily = 'Avenir, Helvetica Neue, Helvetica, Arial, sans-serif';
+                fontFamily = '"Birthday Nunito", "Segoe UI", Arial, sans-serif';
             function fit() {
                 var area = S.Drawing.getContentArea();
                 gap = area.w < 600 ? 4 : 7;
@@ -532,7 +553,7 @@
                 return { dots: dots, w: dots.length ? maxX - minX : 0, h: dots.length ? maxY - minY : 0 };
             }
             function setFontSize(s) {
-                shapeContext.font = 'bold ' + s + 'px ' + fontFamily;
+                shapeContext.font = '800 ' + s + 'px ' + fontFamily;
             }
             return {
                 getGap: function () { return gap; },
@@ -656,6 +677,8 @@
                         }
                     }
                     setFontSize(size);
+                    // Sample small glyphs more closely so diacritics keep their shape on phones.
+                    gap = Math.max(3, Math.min(6, Math.round(size / 26)));
                     shapeContext.clearRect(0, 0, shapeCanvas.width, shapeCanvas.height);
                     lines.forEach(function (text, i) {
                         shapeContext.fillText(text, shapeCanvas.width / 2,
@@ -725,9 +748,9 @@
                         dots[d].e = fast ? 0.25 : (dots[d].s ? 0.14 : 0.11);
                         if (dots[d].s) {
                             dots[d].move(new S.Point({
-                                z: Math.random() * 20 + 10,
+                                z: Math.random() * 6 + 5,
                                 a: Math.random(),
-                                h: 18
+                                h: 8
                             }));
                         } else {
                             dots[d].move(new S.Point({
@@ -740,7 +763,7 @@
                             x: n.dots[i].x + cx,
                             y: n.dots[i].y + cy,
                             a: 1,
-                            z: 5,
+                            z: 5.6,
                             h: 0
                         }));
                         n.dots = n.dots.slice(0, i).concat(n.dots.slice(i + 1));
@@ -749,7 +772,7 @@
                     for (var i = d; i < dots.length; i++) {
                         if (dots[i].s) {
                             dots[i].move(new S.Point({
-                                z: Math.random() * 20 + 10,
+                                z: Math.random() * 6 + 5,
                                 a: Math.random(),
                                 h: 20
                             }));

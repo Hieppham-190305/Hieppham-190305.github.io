@@ -1,4 +1,11 @@
 [hidden] { display: none !important; }
+@font-face {
+    font-family: 'Birthday Nunito';
+    src: url('assets/fonts/Nunito.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 200 1000;
+    font-display: swap;
+}
 :root { color-scheme: dark; }
 button { font: inherit; -webkit-tap-highlight-color: transparent; cursor: pointer; }
 button:focus-visible { outline: 2px solid #fff2b5; outline-offset: 6px; }
