@@ -6,7 +6,12 @@
     font-weight: 200 1000;
     font-display: swap;
 }
-:root { color-scheme: dark; }
+:root {
+    color-scheme: dark;
+    --avatar-width: clamp(144px, 30vmin, 208px);
+    --avatar-height: calc(var(--avatar-width) / 1.55);
+    --avatar-radius: clamp(12px, 2vmin, 20px);
+}
 button { font: inherit; -webkit-tap-highlight-color: transparent; cursor: pointer; }
 button:focus-visible { outline: 2px solid #fff2b5; outline-offset: 6px; }
 .overlay {
@@ -66,14 +71,14 @@ h2 { color: #fff0cd; font-size: clamp(35px, 7vw, 54px); margin: 10px 0 24px; out
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @keyframes appear { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 @media (max-height: 520px) { .gift { width: 112px; height: 116px; transform: scale(.65); margin: -22px auto; animation: none; } .eyebrow { margin-bottom: 12px; } h1 { font-size: 32px; margin: 12px 0; } .intro-copy { margin-bottom: 16px; } .welcome .sound-note { margin-top: 10px; } .cake-actions p { display: none; } .cake-actions { bottom: calc(max(16px, env(safe-area-inset-bottom)) + 58px); } }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } #logo:hover { transform: none; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } #avatar-secret:hover #logo { transform: none; } }
 
-#avatar-secret { display: block; margin: 0 auto; padding: 0; border: 0; border-radius: 50%; background: transparent; }
+#avatar-secret { display: block; margin: 0 auto; padding: 0; border: 0; border-radius: var(--avatar-radius); background: transparent; }
 body[data-scene="memories"] .canvas, body[data-scene="wish"] .canvas { opacity: 0; }
 body[data-scene="wish"] .cs, body[data-scene="wish"] .text { visibility: hidden; }
 body[data-scene="memories"] .cs, body[data-scene="card"] .cs,
 body[data-scene="memories"] .text, body[data-scene="card"] .text { visibility: hidden; }
-.secret-message { position: fixed; z-index: 10; top: calc(max(16px, env(safe-area-inset-top)) + clamp(64px, 16vmin, 128px) + 16px); left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100% - 32px); padding: 10px 18px; border: 1px solid #caa776; border-radius: 16px; background: #2b1d18f5; font-size: 13px; line-height: 1.7; text-align: center; box-shadow: 0 8px 35px #0005; }
+.secret-message { position: fixed; z-index: 10; top: calc(max(16px, env(safe-area-inset-top)) + var(--avatar-height) + 16px); left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100% - 32px); padding: 10px 18px; border: 1px solid #caa776; border-radius: 16px; background: #2b1d18f5; font-size: 13px; line-height: 1.7; text-align: center; box-shadow: 0 8px 35px #0005; }
 .memories-content { width: min(100%, 460px); margin: auto; }
 .memories-content h2 { font-size: clamp(30px, 6vw, 42px); margin: 0 0 24px; }
 .memories-content .eyebrow { margin-bottom: 12px; }
@@ -110,3 +115,5 @@ body[data-scene="memories"] .text, body[data-scene="card"] .text { visibility: h
 #download-card { display: inline-block; text-decoration: none; }
 #close-preview { display: block; margin: 8px auto 0; }
 @media (max-height: 600px) { .polaroid { width: min(45vh, 230px); } .memories-content h2 { font-size: 28px; margin-bottom: 16px; } .polaroid figcaption { font-size: 12px; margin-top: 6px; } .memory-count { margin: 14px 0 6px; } }
+
+@media (max-width: 480px) { .music-control { font-size: 10px; padding: 7px 9px; } }
