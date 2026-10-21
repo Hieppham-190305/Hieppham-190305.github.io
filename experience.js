@@ -6,7 +6,8 @@ var Experience = (function () {
         announcement = document.getElementById('announcement'), timer, scene = 'intro',
         memories = document.getElementById('memories'), wish = document.getElementById('wish-sky'),
         letter = document.getElementById('personal-letter'), content = window.BirthdayContent,
-        memoryIndex = 0, memoryTimer, secretTimer, imageUrl;
+        memoryIndex = 0, memoryTimer, secretTimer, imageUrl,
+        candleEffects = document.getElementById('candle-effects');
     var messages = 'Chúc mừng|Sinh nhật|Phan Võ Minh Thư|#countdown 3|Chúc Thư|Luôn vui vẻ|Tài sắc vẹn toàn|và|Sớm có bằng lái|nhaaaa|#memories';
     document.getElementById('letter-message').textContent = content.letter;
     document.getElementById('letter-signature').textContent = content.signature;
@@ -78,6 +79,7 @@ var Experience = (function () {
 
     function start() {
         clearTimeout(timer); clearTimeout(memoryTimer); clearTimeout(secretTimer);
+        candleEffects.hidden = true; candleEffects.classList.remove('is-extinguished');
         intro.classList.remove('is-opening', 'is-leaving');
         memories.hidden = true; wish.hidden = true; letter.hidden = true;
         document.getElementById('secret-message').hidden = true;
@@ -127,23 +129,44 @@ var Experience = (function () {
     function finishMemories() {
         if (scene !== 'memories') { return; }
         clearTimeout(memoryTimer); memories.hidden = true;
-        S.Shape.switchShape(S.ShapeBuilder.cake(true), true, true);
+        S.Shape.switchShape(S.ShapeBuilder.cake(), true, true);
         showCake();
+    }
+    function layoutCandles() {
+        if (scene !== 'cake' && scene !== 'blowing') { return; }
+        var anchors = S.Shape.getCandles();
+        candleEffects.querySelectorAll('.candle-effect').forEach(function (flame, index) {
+            var point = anchors[index];
+            if (!point) { return; }
+            flame.style.left = point.x + 'px'; flame.style.top = point.y + 'px';
+            flame.style.setProperty('--flame-width', Math.max(7, 16 * point.scale) + 'px');
+            flame.style.setProperty('--flame-height', Math.max(14, 32 * point.scale) + 'px');
+            flame.style.setProperty('--smoke-height', Math.max(32, 65 * point.scale) + 'px');
+        });
     }
     function showCake() {
         scene = 'cake'; document.body.dataset.scene = scene;
+        candleEffects.hidden = true; candleEffects.classList.remove('is-extinguished');
+        document.getElementById('blow-candles').disabled = false;
         timer = setTimeout(function () {
             actions.hidden = false;
             // Reserve room below the cake for the wish prompt on short screens.
             S.ShapeBuilder.refresh();
+            layoutCandles(); candleEffects.hidden = false;
             announcement.textContent = 'Ước một điều rồi chạm vào nút để tắt nến nhé.';
             document.getElementById('blow-candles').focus({preventScroll: true});
         }, 1800);
     }
     function blowCandles() {
         if (scene !== 'cake') { return; }
-        scene = 'wish'; document.body.dataset.scene = scene; actions.hidden = true;
-        S.Shape.switchShape(S.ShapeBuilder.cake(false), true, true);
+        scene = 'blowing'; document.body.dataset.scene = scene;
+        document.getElementById('blow-candles').disabled = true;
+        candleEffects.classList.add('is-extinguished');
+        announcement.textContent = 'Nến đã tắt, gửi điều ước lên bầu trời nhé.';
+        timer = setTimeout(showWish, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 150 : 1750);
+    }
+    function showWish() {
+        scene = 'wish'; document.body.dataset.scene = scene; actions.hidden = true; candleEffects.hidden = true;
         wish.hidden = false;
         announcement.textContent = 'Mong điều Thư vừa ước sẽ thành hiện thực.';
         document.getElementById('wish-message').focus({preventScroll: true});
@@ -226,5 +249,5 @@ var Experience = (function () {
             if (!document.hidden && musicOn) { audio.resume().then(playNote).catch(function () {}); }
         }
     });
-    return { showCake: showCake, showMemories: showMemories };
+    return { showCake: showCake, showMemories: showMemories, layoutCandles: layoutCandles };
 }());

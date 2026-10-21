@@ -134,3 +134,21 @@ body[data-scene="memories"] .text, body[data-scene="card"] .text { visibility: h
 @media (max-height: 600px) { .polaroid { width: min(45vh, 230px); } .memories-content h2 { font-size: 28px; margin-bottom: 16px; } .polaroid figcaption { font-size: 12px; margin-top: 6px; } .memory-count { margin: 14px 0 6px; } }
 
 @media (max-width: 480px) { .music-control { font-size: 10px; padding: 7px 9px; } }
+
+#candle-effects { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+.candle-effect { position: absolute; width: 0; height: 0; --flame-width: 16px; --flame-height: 32px; --smoke-height: 65px; }
+.candle-flame { position: absolute; bottom: 2px; left: calc(var(--flame-width) / -2); width: var(--flame-width); height: var(--flame-height); border-radius: 52% 48% 44% 46% / 70% 70% 30% 30%; transform-origin: 50% 100%; background: radial-gradient(ellipse at 50% 78%, #fff9df 0%, #ffe6a0 35%, #efb346 70%, #da8c2422 100%); box-shadow: 0 0 9px #ffd27788, 0 0 22px #f0af3933; animation: candle-sway 1.5s ease-in-out infinite alternate; }
+.candle-effect:nth-child(2) .candle-flame { animation-delay: -.6s; animation-duration: 1.8s; }
+.candle-effect:nth-child(3) .candle-flame { animation-delay: -1s; animation-duration: 1.3s; }
+.candle-flame::after { content: ''; position: absolute; left: 35%; bottom: 8%; width: 30%; height: 42%; border-radius: 50%; background: #fff8df; }
+.candle-smoke { position: absolute; bottom: 3px; left: -7px; width: 14px; height: var(--smoke-height); opacity: 0; transform-origin: 50% 100%; }
+.candle-smoke::before, .candle-smoke::after { content: ''; position: absolute; bottom: 0; left: 5px; width: 9px; height: 75%; border-left: 1.5px solid #f0e4d28c; border-radius: 50%; transform: rotate(8deg); filter: blur(.5px); }
+.candle-smoke::after { bottom: 45%; left: 0; width: 12px; height: 55%; border-left: 0; border-right: 1px solid #f0e4d266; transform: rotate(-12deg); }
+#candle-effects.is-extinguished .candle-flame { opacity: 0; transform: scale(.08); animation: candle-out .42s ease-out both; }
+#candle-effects.is-extinguished .candle-smoke { animation: candle-smoke-rise 1.35s .3s ease-out both; }
+#candle-effects.is-extinguished .candle-effect:nth-child(2) .candle-smoke { animation-delay: .38s; }
+#candle-effects.is-extinguished .candle-effect:nth-child(3) .candle-smoke { animation-delay: .34s; }
+body[data-scene="blowing"] .cake-actions { visibility: hidden; pointer-events: none; }
+@keyframes candle-sway { from { transform: skewX(-5deg) scale(.95, 1.03); } to { transform: skewX(5deg) scale(1.03, .96); } }
+@keyframes candle-out { 0% { opacity: 1; transform: skewX(5deg) scale(1); } 55% { opacity: .8; transform: skewX(18deg) scale(.65, .55); } 100% { opacity: 0; transform: translateY(3px) scale(.08); } }
+@keyframes candle-smoke-rise { 0% { opacity: 0; transform: translate(0, 4px) scale(.5, .35); } 25% { opacity: .5; } 65% { opacity: .3; } 100% { opacity: 0; transform: translate(9px, -26px) scale(1.3, 1.1); } }

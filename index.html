@@ -136,6 +136,11 @@
     </section>
     <button class="music-control" id="music" type="button" aria-pressed="false" hidden>Nhạc: tắt</button>
     <p class="sr-only" id="announcement" role="status" aria-live="polite"></p>
+    <div id="candle-effects" aria-hidden="true" hidden>
+        <span class="candle-effect"><span class="candle-flame"></span><span class="candle-smoke"></span></span>
+        <span class="candle-effect"><span class="candle-flame"></span><span class="candle-smoke"></span></span>
+        <span class="candle-effect"><span class="candle-flame"></span><span class="candle-smoke"></span></span>
+    </div>
     <div class="cake-actions" id="cake-actions" hidden>
         <p>Nhắm mắt lại, ước một điều thật đẹp…</p>
         <button class="button primary" id="blow-candles">Chạm để tắt nến <span aria-hidden="true">✧</span></button>
@@ -382,7 +387,7 @@
                             Experience.showMemories();
                             break;
                         case 'cake':
-                            S.Shape.switchShape(S.ShapeBuilder.cake(true));
+                            S.Shape.switchShape(S.ShapeBuilder.cake());
                             Experience.showCake();
                             break;
                         case 'circle':
@@ -536,7 +541,6 @@
                 shapeCanvas = document.createElement('canvas'),
                 shapeContext = shapeCanvas.getContext('2d'),
                 currentLetter = null,
-                candlesLit = true,
                 fontFamily = '"Birthday Nunito", "Segoe UI", Arial, sans-serif';
             function fit() {
                 var area = S.Drawing.getContentArea();
@@ -563,7 +567,7 @@
                     }
                 }
                 dots.forEach(function (dot) { dot.x -= minX; dot.y -= minY; });
-                return { dots: dots, w: dots.length ? maxX - minX : 0, h: dots.length ? maxY - minY : 0 };
+                return { dots: dots, w: dots.length ? maxX - minX : 0, h: dots.length ? maxY - minY : 0, origin: { x: dots.length ? minX : 0, y: dots.length ? minY : 0 } };
             }
             function setFontSize(s) {
                 shapeContext.font = '800 ' + s + 'px ' + fontFamily;
@@ -597,8 +601,7 @@
                     shapeContext.closePath();
                     return processCanvas();
                 },
-                cake: function (lit) {
-                    if (lit !== undefined) { candlesLit = lit; }
+                cake: function () {
                     currentLetter = '#cake';
                     fit();
                     // Fixed geometry keeps the cake identical across system emoji fonts.
@@ -637,16 +640,9 @@
                     c.bezierCurveTo(185, 260, 295, 260, 346, 237);
                     c.stroke();
 
-                    // Three candles with flame outlines.
+                    // Particle candle stems; animated flames are anchored to these coordinates.
                     [190, 240, 290].forEach(function (x) {
                         c.strokeRect(x - 6, 91, 12, 58);
-                        if (candlesLit) {
-                            c.beginPath();
-                            c.moveTo(x, 54);
-                            c.bezierCurveTo(x - 23, 78, x - 6, 89, x, 84);
-                            c.bezierCurveTo(x + 16, 79, x + 9, 66, x, 54);
-                            c.stroke();
-                        }
                     });
                     // Matching decorative sparkles on both sides.
                     [60, 420].forEach(function (x) {
@@ -663,7 +659,12 @@
                         c.stroke();
                     });
                     c.restore();
-                    return processCanvas();
+                    var shape = processCanvas();
+                    shape.candles = [190, 240, 290].map(function (x) {
+                        return { x: shapeCanvas.width / 2 + (x - 240) * scale - shape.origin.x,
+                            y: shapeCanvas.height / 2 + (91 - 160) * scale - shape.origin.y, scale: scale };
+                    });
+                    return shape;
                 },
                 letter: function (l) {
                     currentLetter = String(l);
@@ -720,7 +721,8 @@
                 width = 0,
                 height = 0,
                 cx = 0,
-                cy = 0;
+                cy = 0,
+                candles = [];
             function compensate() {
                 var a = S.Drawing.getArea();
                 var content = S.Drawing.getContentArea();
@@ -728,6 +730,9 @@
                 cy = content.y + (content.h - height) / 2;
             }
             return {
+                getCandles: function () {
+                    return candles.map(function (point) { return { x: point.x + cx, y: point.y + cy, scale: point.scale }; });
+                },
                 shuffleIdle: function () {
                     var a = S.Drawing.getArea();
                     for (var d = 0; d < dots.length; d++) {
@@ -747,7 +752,9 @@
                         a = S.Drawing.getArea();
                     width = n.w;
                     height = n.h;
+                    candles = n.candles || [];
                     compensate();
+                    if (window.Experience) { window.Experience.layoutCandles(); }
                     if (n.dots.length > dots.length) {
                         size = n.dots.length - dots.length;
                         for (var d = 1; d <= size; d++) {
