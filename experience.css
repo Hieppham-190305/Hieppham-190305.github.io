@@ -38,6 +38,23 @@ h1 { font-size: clamp(35px, 7vw, 58px); margin: 16px 0 22px; color: #fff0cd; }
 .gift-lid { position: absolute; width: 112px; height: 22px; bottom: 65px; left: 0; background: #eec887; border-radius: 4px; z-index: 1; }
 .gift-bow::before, .gift-bow::after { content: ''; position: absolute; top: 4px; width: 36px; height: 27px; border: 7px solid #f9e6b6; border-radius: 24px 24px 0 24px; left: 21px; transform: rotate(15deg); }
 .gift-bow::after { left: 55px; transform: scaleX(-1) rotate(15deg); }
+.gift-bow { position: absolute; top: -29px; left: 0; width: 100%; height: 29px; }
+.gift-lid { transform-origin: 20% 50%; transition: transform 1s cubic-bezier(.22,.8,.22,1); z-index: 4; }
+.gift-light { position: absolute; left: -39px; top: -48px; width: 190px; height: 175px; opacity: 0; transform: scale(.5); background: radial-gradient(ellipse, #ffe7ad88, #efba4d18 55%, transparent 72%); transition: opacity 1.2s, transform 1.3s; }
+.gift-surprise { position: absolute; left: -44px; top: 5px; width: 200px; color: #fff0cd; font: italic 18px/1.5 Georgia, serif; white-space: nowrap; opacity: 0; transform: translateY(25px); transition: opacity .65s .3s, transform .85s .25s; z-index: 2; }
+.gift-spark { position: absolute; left: 53px; top: 48px; width: 5px; height: 8px; border-radius: 2px; background: #f9dca0; opacity: 0; }
+#intro { transition: opacity .35s ease; }
+#intro.is-opening .gift { animation: none; }
+#intro.is-opening .gift-lid { transform: translate(-10px, -70px) rotate(-14deg); }
+#intro.is-opening .gift-light { opacity: 1; transform: scale(1.1); }
+#intro.is-opening .gift-surprise { opacity: 1; transform: translateY(0); }
+#intro.is-opening .gift-spark { animation: gift-burst 1.25s .1s ease-out both; }
+#intro.is-opening .eyebrow { opacity: 0; transition: opacity .2s; }
+#intro.is-leaving { opacity: 0; }
+#intro.is-opening #open-gift:disabled { opacity: 1; cursor: default; box-shadow: 0 0 24px #f4cc7a33; }
+body[data-scene="opening"] .cs, body[data-scene="opening"] .text { visibility: hidden; }
+body[data-scene="opening"] .canvas { opacity: 0; }
+@keyframes gift-burst { 0% { opacity: 0; transform: translate(0, 0) rotate(0); } 15% { opacity: 1; } 70% { opacity: .65; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--turn)); } }
 @keyframes float { 50% { transform: translateY(-8px) rotate(2deg); } }
 .music-control { position: fixed; z-index: 9; right: max(14px, env(safe-area-inset-right)); top: max(16px, env(safe-area-inset-top)); border: 1px solid #e2bd784a; border-radius: 999px; background: #211814ba; color: #eed5a7; backdrop-filter: blur(12px); font-size: 11px; padding: 8px 12px; line-height: 1.5; letter-spacing: .2px; min-height: 38px; }
 body[data-scene="intro"] .cs, body[data-scene="intro"] .text { visibility: hidden; }

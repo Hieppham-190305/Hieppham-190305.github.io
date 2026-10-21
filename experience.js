@@ -78,6 +78,7 @@ var Experience = (function () {
 
     function start() {
         clearTimeout(timer); clearTimeout(memoryTimer); clearTimeout(secretTimer);
+        intro.classList.remove('is-opening', 'is-leaving');
         memories.hidden = true; wish.hidden = true; letter.hidden = true;
         document.getElementById('secret-message').hidden = true;
         document.getElementById('open-letter').setAttribute('aria-expanded', 'false');
@@ -86,6 +87,21 @@ var Experience = (function () {
         announcement.textContent = 'Những lời chúc sinh nhật dành cho Thư.';
         S.UI.simulate(messages);
         musicButton.focus({preventScroll: true});
+    }
+    function openGift() {
+        if (scene !== 'intro') { return; }
+        scene = 'opening'; document.body.dataset.scene = scene;
+        document.getElementById('open-gift').disabled = true;
+        announcement.textContent = 'Món quà dành cho Thư đang mở…';
+        musicButton.hidden = false;
+        // Start audio during the original tap so mobile browsers allow playback.
+        toggleMusic();
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { start(); return; }
+        intro.classList.add('is-opening');
+        timer = setTimeout(function () {
+            intro.classList.add('is-leaving');
+            timer = setTimeout(start, 350);
+        }, 1450);
     }
     function showMemory() {
         clearTimeout(memoryTimer);
@@ -181,7 +197,7 @@ var Experience = (function () {
             document.getElementById('save-preview').showModal();
         }, 'image/png');
     }
-    document.getElementById('open-gift').addEventListener('click', function () { start(); toggleMusic(); });
+    document.getElementById('open-gift').addEventListener('click', openGift);
     document.getElementById('replay').addEventListener('click', start);
     document.getElementById('blow-candles').addEventListener('click', blowCandles);
     document.getElementById('memory-next').addEventListener('click', function () {
